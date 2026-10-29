@@ -1,0 +1,12 @@
+Nothing Interface lockscreen
+Upstream: https://github.com/venchik111/ryoku-nothing-interface
+Author: Ivan (venchik111), 2026
+License: MIT; see LICENSE.
+
+Satirito contributed system-locale translations, deferred password focus and
+active MPRIS player selection in upstream pull request #2.
+The translation reader follows Ryoku's clockwork/orbital theme and loads the
+system-provided catalogue; no catalogue copy is bundled here.
+
+No Nothing wallpaper, artwork or font is bundled in this package.
+Nothing names and trademarks belong to their respective owners.

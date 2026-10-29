@@ -14,7 +14,7 @@ Item {
     readonly property string videoUrl: videoPath.length ? "file://" + videoPath : ""
     property var battery: ({level: -1, charging: false, plugged: false})
     property var activity: ({seconds: 0, available: false})
-    property var media: ({playing: false, available: false, title: "", artist: "", position: 0, length: 0})
+    property var media: ({player: "", playing: false, available: false, title: "", artist: "", position: 0, length: 0})
 
     function applyWallpaper(line) {
         try {
@@ -80,11 +80,12 @@ Item {
     }
     Process {
         id: playback
-        command: ["playerctl", "play-pause"]
         onExited: mediaProbe.running = true
     }
     function togglePlayback() {
-        if (media.available && !playback.running) playback.running = true
+        if (!media.available || !media.player || playback.running) return
+        playback.command = ["playerctl", "-p", String(media.player), "play-pause"]
+        playback.running = true
     }
     Timer { interval: 10000; repeat: true; running: true; onTriggered: root.refresh() }
     Timer { interval: 2000; repeat: true; running: true; onTriggered: if (!mediaProbe.running) mediaProbe.running = true }

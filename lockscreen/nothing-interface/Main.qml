@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Window
 import SddmComponents 2.0
+import "i18n"
 
 Rectangle {
     id: root
@@ -25,9 +26,13 @@ Rectangle {
         ? userModel.lastUser : ""
     readonly property real uiScale: Math.min(width / 1280, height / 720)
 
+    // The shipped Ryoku translation catalogue at /usr/share/ryoku/i18n is the
+    // single language table for this lockscreen. The theme ships no per-language
+    // copy; every visible string goes through I18n.tr() and falls back to the
+    // English key on a miss.
     function duration(seconds) {
         const value = Math.max(0, Math.floor(Number(seconds || 0)))
-        return Math.floor(value / 3600) + " ч " + String(Math.floor(value % 3600 / 60)).padStart(2, "0") + " мин"
+        return Math.floor(value / 3600) + ":" + String(Math.floor(value % 3600 / 60)).padStart(2, "0")
     }
     function stamp(seconds) {
         const value = Math.max(0, Math.floor(Number(seconds || 0)))
@@ -46,12 +51,21 @@ Rectangle {
         target: typeof sddm !== "undefined" ? sddm : null
         function onLoginFailed() {
             password.text = ""
-            root.errorMessage = "Неверный пароль"
+            root.errorMessage = I18n.tr("Login Failed")
             errorTimer.restart()
             password.forceActiveFocus()
         }
     }
-    Component.onCompleted: password.forceActiveFocus()
+    // Input Focus — defer to ensure the greeter has settled before stealing focus
+    Timer {
+        id: focusTimer
+        interval: 300
+        running: true
+        onTriggered: {
+            if (typeof password !== "undefined")
+                password.forceActiveFocus()
+        }
+    }
 
     Image {
         anchors.fill: parent
@@ -84,7 +98,7 @@ Rectangle {
 
         Text {
             x: 0; y: -43
-            text: Qt.formatDate(root.now, "dddd, d MMMM")
+            text: Qt.locale().toString(root.now, "dddd, d MMMM")
             font.family: "Noto Sans"; font.pixelSize: 20
             color: "#F5F5F5"
         }
@@ -142,7 +156,7 @@ Rectangle {
             color: "#1C1D21"
             Text {
                 x: 22; y: 18
-                text: "ЗАРЯД"
+                text: I18n.tr("BATTERY")
                 font.family: "Noto Sans"; font.pixelSize: 11; font.letterSpacing: 1.5
                 color: "#B1B3B3"
             }
@@ -154,7 +168,7 @@ Rectangle {
             }
             Text {
                 x: 145; y: 78
-                text: root.battery.charging ? "Заряжается" : (root.battery.plugged ? "Подключено" : "От батареи")
+                text: root.battery.charging ? I18n.tr("Charging") : (root.battery.plugged ? I18n.tr("PLUGGED IN") : I18n.tr("On battery"))
                 font.family: "Noto Sans"; font.pixelSize: 10
                 color: "#B1B3B3"
             }
@@ -172,19 +186,19 @@ Rectangle {
             color: "#1C1D21"
             Text {
                 x: 22; y: 18
-                text: "ВРЕМЯ ЗА ПК"
+                text: I18n.tr("USAGE")
                 font.family: "Noto Sans"; font.pixelSize: 11; font.letterSpacing: 1.5
                 color: "#B1B3B3"
             }
             Text {
                 x: 22; y: 49
-                text: root.activity.available ? root.duration(root.activity.seconds) : "Нет данных"
+                text: root.activity.available ? root.duration(root.activity.seconds) : I18n.tr("No data")
                 font.family: "Noto Sans"; font.pixelSize: 25; font.weight: Font.Medium
                 color: "#F5F5F5"
             }
             Text {
                 x: 22; y: 96
-                text: "Сегодня · Ryoku Rashin"
+                text: I18n.tr("Today") + " · Ryoku Rashin"
                 font.family: "Noto Sans"; font.pixelSize: 11
                 color: "#B1B3B3"
             }
@@ -195,19 +209,19 @@ Rectangle {
             color: "#1C1D21"
             Text {
                 x: 24; y: 19
-                text: "СЕЙЧАС ИГРАЕТ"
+                text: I18n.tr("NOW PLAYING")
                 font.family: "Noto Sans"; font.pixelSize: 11; font.letterSpacing: 1.5
                 color: "#B1B3B3"
             }
             Text {
                 x: 148; y: 57; width: 356
-                text: root.media.available ? (root.media.title || "Музыка") : "Ничего не играет"
+                text: root.media.available ? (root.media.title || I18n.tr("Music")) : I18n.tr("Nothing playing")
                 font.family: "Noto Sans"; font.pixelSize: 26; font.weight: Font.Medium
                 color: "#F5F5F5"; elide: Text.ElideRight
             }
             Text {
                 x: 148; y: 104; width: 356
-                text: root.media.available ? (root.media.artist || " ") : "Запустите музыку на рабочем столе"
+                text: root.media.available ? (root.media.artist || " ") : ""
                 font.family: "Noto Sans"; font.pixelSize: 15
                 color: "#B1B3B3"; elide: Text.ElideRight
             }
@@ -257,7 +271,7 @@ Rectangle {
             color: "#1C1D21"
             Text {
                 x: 24; y: 16
-                text: root.loginUser.length ? root.loginUser : "Пользователь"
+                text: root.loginUser.length ? root.loginUser : I18n.tr("USER")
                 font.family: "Noto Sans"; font.pixelSize: 14; font.weight: Font.Medium
                 color: "#F5F5F5"
             }
@@ -281,7 +295,7 @@ Rectangle {
                     anchors.leftMargin: 20
                     verticalAlignment: Text.AlignVCenter
                     visible: password.text.length === 0
-                    text: "Пароль"
+                    text: I18n.tr("Password")
                     font.family: "Noto Sans"; font.pixelSize: 15
                     color: "#A9AAAE"
                     MouseArea { anchors.fill: parent; onClicked: password.forceActiveFocus() }
@@ -289,7 +303,7 @@ Rectangle {
             }
             Text {
                 x: 24; y: 112
-                text: root.errorMessage.length ? root.errorMessage : "Нажмите Enter, чтобы разблокировать"
+                text: root.errorMessage.length ? root.errorMessage : I18n.tr("Unlock")
                 font.family: "Noto Sans"; font.pixelSize: 12
                 color: root.errorMessage.length ? "#D84545" : "#B1B3B3"
             }
