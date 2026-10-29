@@ -17,6 +17,7 @@ class QmlTests(unittest.TestCase):
             with self.subTest(locale=locale):
                 env = dict(os.environ, LANG=locale + '.UTF-8', LC_ALL=locale + '.UTF-8',
                            QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software',
+                           QT_QUICK_CONTROLS_STYLE='Basic',
                            QML_XHR_ALLOW_FILE_READ='1', QML_IMPORT_PATH=str(ROOT / 'imports'),
                            QT_FORCE_STDERR_LOGGING='1', QT_LOGGING_TO_CONSOLE='1',
                            QT_LOGGING_RULES='*.debug=false;qml.debug=true;qml.warning=true;qml.critical=true')
