@@ -18,6 +18,13 @@ Ryoku's existing authentication mechanism and requires `python3` and `playerctl`
 for its local data helpers. Quickshell-specific code is loaded only during
 in-session locking. It does not bundle wallpapers or Nothing fonts.
 
+Version 0.2.0 also supports a persistent SDDM background, session selection and
+confirmed shutdown/reboot controls. To enable background synchronization, run
+`bash lockscreen/install-greeter.sh` from the source repository as your desktop
+user. It requests system authorization and requires `python-pillow`. See
+`../README.md` for the greeter setup and `../nothing-greeter-wallpaper.service`
+for the user service; those setup files remain outside this theme package.
+
 The package manifest lists files relative to this directory. After changing a
 listed file, update its byte size and SHA-256 digest. Developer checks are
 documented in `../tests/README.md` in the source repository.

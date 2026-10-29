@@ -1,0 +1,19 @@
+[Unit]
+Description=Keep Nothing Interface sign-in wallpaper in sync with Ryogami
+PartOf=ryoku-session.target
+After=ryogami.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/.local/share/qylock/themes/nothing-interface/bin/greeter-wallpaper.py
+Restart=on-failure
+RestartSec=3
+UMask=0022
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/ryoku/nothing-interface/background
+
+[Install]
+WantedBy=ryoku-session.target

@@ -62,7 +62,9 @@ cp -a lockscreen/nothing-interface "$HOME/.local/share/qylock/themes/"
 ryoku-hub lock set nothing-interface
 ```
 
-Select or restore a lock screen in **Ryoku Hub → Lockscreen**. This theme subscribes to Ryogami's wallpaper updates, including changes made while the session is locked. It does not maintain a second wallpaper file. The lock screen's clock, battery, daily screen time and MPRIS media information refresh in place. A system password prompt may appear if Ryoku also applies the theme to the SDDM greeter.
+Select or restore a lock screen in **Ryoku Hub → Lockscreen**. This theme subscribes to Ryogami's wallpaper updates, including changes made while the session is locked. The lock screen's clock, battery, daily screen time and MPRIS media information refresh in place.
+
+For an SDDM sign-in screen that retains the wallpaper across reboots, run `bash lockscreen/install-greeter.sh`. The installer requests system authorization and enables a user service that saves the latest background outside the home directory. The sign-in screen includes installed session selection, suspend, shutdown and restart; shutdown and restart require confirmation. See [installation and verification details](lockscreen/README.md).
 
 The media tile reads local MPRIS metadata and Ryoku's lyrics feed. It fills the cover area with the player's album art when available, falling back to the geometric disc otherwise. Qt may fetch a remote artwork URL supplied by the player. Screen time comes from Ryoku's own daily counter.
 

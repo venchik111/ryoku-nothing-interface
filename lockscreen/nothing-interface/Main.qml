@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Window
-import SddmComponents 2.0
+import QtQuick.Controls as Controls
 import "i18n"
 
 Rectangle {
@@ -20,8 +20,18 @@ Rectangle {
     readonly property var media: live ? live.media : ({available: false, playing: false})
     property date now: new Date()
     property string errorMessage: ""
-    readonly property int sessionIndex: (typeof sessionModel !== "undefined" && sessionModel.lastIndex >= 0)
-        ? sessionModel.lastIndex : 0
+    property string pendingPowerAction: ""
+    readonly property int sessionIndex: Math.max(0, sessionPicker.currentIndex)
+    readonly property string savedWallpaper: typeof config !== "undefined" && config.background
+        ? String(config.background) : ""
+    readonly property string backgroundUrl: root.live && root.live.wallpaperUrl.length > 0
+        ? root.live.wallpaperUrl : root.savedWallpaper
+    readonly property bool canPowerOff: typeof sddm !== "undefined"
+        && typeof sddm.powerOff === "function" && sddm.canPowerOff !== false
+    readonly property bool canReboot: typeof sddm !== "undefined"
+        && typeof sddm.reboot === "function" && sddm.canReboot !== false
+    readonly property bool canSuspend: typeof sddm !== "undefined"
+        && typeof sddm.suspend === "function" && sddm.canSuspend !== false
     readonly property string loginUser: (typeof userModel !== "undefined" && userModel.lastUser)
         ? userModel.lastUser : ""
     readonly property real uiScale: Math.min(width / 1280, height / 720)
@@ -42,6 +52,22 @@ Rectangle {
         if (!password.text.length || !loginUser.length) return
         errorMessage = ""
         sddm.login(loginUser, password.text, sessionIndex)
+    }
+    function requestPower(action) {
+        if (action === "suspend") {
+            if (canSuspend) sddm.suspend()
+            return
+        }
+        if ((action === "powerOff" && !canPowerOff) || (action === "reboot" && !canReboot)) return
+        pendingPowerAction = action
+        powerDialog.open()
+    }
+    function confirmPower() {
+        const action = pendingPowerAction
+        powerDialog.close()
+        pendingPowerAction = ""
+        if (action === "powerOff" && canPowerOff) sddm.powerOff()
+        else if (action === "reboot" && canReboot) sddm.reboot()
     }
 
     Loader { id: liveData; active: root.inSession; source: "LiveData.qml" }
@@ -68,9 +94,11 @@ Rectangle {
     }
 
     Image {
+        id: backgroundImage
+        objectName: "backgroundImage"
         anchors.fill: parent
-        visible: root.live && root.live.wallpaperUrl.length > 0
-        source: root.live ? root.live.wallpaperUrl : ""
+        visible: source.toString().length > 0
+        source: root.backgroundUrl
         fillMode: root.live && root.live.fit === "Contain" ? Image.PreserveAspectFit : Image.PreserveAspectCrop
         asynchronous: true
         cache: false
@@ -168,7 +196,7 @@ Rectangle {
             }
             Text {
                 x: 145; y: 78
-                text: root.battery.charging ? I18n.tr("Charging") : (root.battery.plugged ? I18n.tr("PLUGGED IN") : I18n.tr("On battery"))
+                text: root.battery.level < 0 ? I18n.tr("No data") : (root.battery.charging ? I18n.tr("Charging") : (root.battery.plugged ? I18n.tr("PLUGGED IN") : I18n.tr("On battery")))
                 font.family: "Noto Sans"; font.pixelSize: 10
                 color: "#B1B3B3"
             }
@@ -281,6 +309,7 @@ Rectangle {
                 border.color: password.activeFocus ? "#77787D" : "#44454A"
                 TextInput {
                     id: password
+                    objectName: "passwordInput"
                     anchors.fill: parent
                     anchors.leftMargin: 20; anchors.rightMargin: 20
                     echoMode: TextInput.Password
@@ -303,9 +332,11 @@ Rectangle {
             }
             Text {
                 x: 24; y: 112
-                text: root.errorMessage.length ? root.errorMessage : I18n.tr("Unlock")
+                width: 330
+                visible: root.errorMessage.length > 0
+                text: root.errorMessage
                 font.family: "Noto Sans"; font.pixelSize: 12
-                color: root.errorMessage.length ? "#D84545" : "#B1B3B3"
+                color: "#D84545"
             }
             Rectangle {
                 x: 369; y: 108; width: 47; height: 43; radius: 21
@@ -319,6 +350,137 @@ Rectangle {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: root.submit()
+                }
+            }
+        }
+
+        Controls.ComboBox {
+            id: sessionPicker
+            objectName: "sessionPicker"
+            x: 544; y: 416; width: 528; height: 48
+            visible: !root.inSession
+            model: typeof sessionModel !== "undefined" ? sessionModel : null
+            textRole: "name"
+            currentIndex: typeof sessionModel !== "undefined" && sessionModel.lastIndex >= 0
+                ? sessionModel.lastIndex : 0
+            font.family: "Noto Sans"; font.pixelSize: 14
+            leftPadding: 22; rightPadding: 44
+            contentItem: Text {
+                text: I18n.tr("Session") + " · " + sessionPicker.displayText
+                font: sessionPicker.font
+                color: "#F5F5F5"
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
+            indicator: Text {
+                x: parent.width - width - 20
+                anchors.verticalCenter: parent.verticalCenter
+                text: "⌄"; font.pixelSize: 22; color: "#D6D6DA"
+            }
+            background: Rectangle {
+                radius: 24; color: "#1C1D21"
+                border.width: sessionPicker.activeFocus ? 2 : 0
+                border.color: "#D6D6DA"
+            }
+            delegate: Controls.ItemDelegate {
+                id: sessionOption
+                required property var model
+                required property int index
+                width: sessionPicker.popup.availableWidth
+                implicitHeight: 44 * root.uiScale
+                padding: 12 * root.uiScale
+                text: model.name
+                font: sessionPicker.font
+                highlighted: sessionPicker.highlightedIndex === index
+                contentItem: Text {
+                    text: sessionOption.text
+                    font.family: "Noto Sans"; font.pixelSize: 14 * root.uiScale
+                    color: "#F5F5F5"
+                    elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter
+                }
+                background: Rectangle { radius: 16 * root.uiScale; color: sessionOption.highlighted ? "#383A40" : "#1C1D21" }
+            }
+            popup: Controls.Popup {
+                y: -height / root.uiScale - 8
+                width: sessionPicker.width * root.uiScale
+                padding: 8 * root.uiScale
+                implicitHeight: Math.min(contentItem.implicitHeight + 16 * root.uiScale, 240 * root.uiScale)
+                contentItem: ListView {
+                    clip: true
+                    implicitHeight: contentHeight
+                    model: sessionPicker.popup.visible ? sessionPicker.delegateModel : null
+                    currentIndex: sessionPicker.highlightedIndex
+                    Controls.ScrollIndicator.vertical: Controls.ScrollIndicator {}
+                }
+                background: Rectangle { radius: 24 * root.uiScale; color: "#1C1D21"; border.color: "#515258" }
+            }
+        }
+
+        Row {
+            x: 544; y: 480
+            spacing: 16
+            ActionButton {
+                objectName: "powerOffButton"
+                text: I18n.tr("Shutdown"); iconName: "power"
+                enabled: root.canPowerOff
+                onClicked: root.requestPower("powerOff")
+            }
+            ActionButton {
+                objectName: "rebootButton"
+                text: I18n.tr("Reboot"); iconName: "reboot"
+                enabled: root.canReboot
+                onClicked: root.requestPower("reboot")
+            }
+            ActionButton {
+                objectName: "suspendButton"
+                text: I18n.tr("Suspend"); iconName: "sleep"
+                enabled: root.canSuspend
+                onClicked: root.requestPower("suspend")
+            }
+        }
+    }
+
+    Controls.Popup {
+        id: powerDialog
+        objectName: "powerDialog"
+        parent: root
+        width: 420 * root.uiScale
+        height: 196 * root.uiScale
+        x: (root.width - width) / 2; y: (root.height - height) / 2
+        modal: true; dim: true; focus: true
+        closePolicy: Controls.Popup.CloseOnEscape | Controls.Popup.CloseOnPressOutside
+        onClosed: password.forceActiveFocus()
+        background: Rectangle { radius: 30 * root.uiScale; color: "#1C1D21"; border.color: "#515258" }
+        Controls.Overlay.modal: Rectangle { color: "#AA101115" }
+        contentItem: Item {
+            Item {
+                width: 396; height: 172
+                anchors.centerIn: parent
+                scale: root.uiScale
+                Text {
+                    x: 16; y: 14
+                    width: 364
+                    text: root.pendingPowerAction === "powerOff" ? I18n.tr("Shutdown") : I18n.tr("Reboot")
+                    elide: Text.ElideRight
+                    font.family: "Noto Sans"; font.pixelSize: 20; font.weight: Font.Medium
+                    color: "#F5F5F5"
+                }
+                Text {
+                    x: 16; y: 52
+                    width: 364
+                    text: root.pendingPowerAction === "powerOff" ? I18n.tr("Are you sure you want to shut down?") : I18n.tr("Are you sure you want to reboot?")
+                    wrapMode: Text.WordWrap
+                    font.family: "Noto Sans"; font.pixelSize: 13; color: "#B1B3B3"
+                }
+                Row {
+                    x: 16; y: 106; spacing: 18
+                    ActionButton { text: I18n.tr("Cancel"); onClicked: powerDialog.close() }
+                    ActionButton {
+                        objectName: "confirmPowerButton"
+                        text: root.pendingPowerAction === "powerOff" ? I18n.tr("Shutdown") : I18n.tr("Reboot")
+                        destructive: true
+                        onClicked: root.confirmPower()
+                    }
                 }
             }
         }

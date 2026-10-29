@@ -2,39 +2,23 @@
   "schema": 1,
   "id": "nothing-interface",
   "category": "lockscreens",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "destination": "qylock/themes/nothing-interface",
   "files": [
+    {
+      "source": "ActionButton.qml",
+      "destination": "ActionButton.qml",
+      "mode": "0644",
+      "size": 2515,
+      "sha256": "4326eacceb098fdbc6512693a0c90b71b9f429d8581ab9a593cc8c5dbbf515d6",
+      "install": true
+    },
     {
       "source": "LICENSE",
       "destination": "LICENSE",
       "mode": "0644",
       "size": 1061,
       "sha256": "ba2c1e000400342bf25ec91e60f59fba59d6d62079cfb698622a39f12468d9b9",
-      "install": true
-    },
-    {
-      "source": "PROVENANCE.txt",
-      "destination": "PROVENANCE.txt",
-      "mode": "0644",
-      "size": 559,
-      "sha256": "d5e8b4b288bef694f5f173dc14c59cc5490d842d8b42bdf8d69904228f7a8f7e",
-      "install": true
-    },
-    {
-      "source": "README.md",
-      "destination": "README.md",
-      "mode": "0644",
-      "size": 1109,
-      "sha256": "7de39ebf51116d738bb42ce808f2cc7d90e13512a3ac6aae96d31fb2692d1670",
-      "install": true
-    },
-    {
-      "source": "Main.qml",
-      "destination": "Main.qml",
-      "mode": "0644",
-      "size": 13684,
-      "sha256": "f8173b5471b5db41b73b0a132b2dca8bfd2e85266c91dd2a73ca1c14e636a3c8",
       "install": true
     },
     {
@@ -54,11 +38,43 @@
       "install": true
     },
     {
+      "source": "Main.qml",
+      "destination": "Main.qml",
+      "mode": "0644",
+      "size": 20880,
+      "sha256": "bfa5be7978942402a607a0a094cb28704d5b1691fe170fb6d950f4d8391b71aa",
+      "install": true
+    },
+    {
+      "source": "PROVENANCE.txt",
+      "destination": "PROVENANCE.txt",
+      "mode": "0644",
+      "size": 559,
+      "sha256": "d5e8b4b288bef694f5f173dc14c59cc5490d842d8b42bdf8d69904228f7a8f7e",
+      "install": true
+    },
+    {
+      "source": "README.md",
+      "destination": "README.md",
+      "mode": "0644",
+      "size": 1576,
+      "sha256": "9932b6fd794e344499f6dc820addc067521e3c6342e151e581efb38586df851c",
+      "install": true
+    },
+    {
       "source": "bin/activity.py",
       "destination": "bin/activity.py",
       "mode": "0755",
       "size": 748,
       "sha256": "fbda6814067e049ba155ebf3c2cd68a41357bff2bca5ba049e58c66f1364d09a",
+      "install": true
+    },
+    {
+      "source": "bin/greeter-wallpaper.py",
+      "destination": "bin/greeter-wallpaper.py",
+      "mode": "0755",
+      "size": 4966,
+      "sha256": "45c5c101e46d7534542aa1ce54afbfbb4ee3b5b898f24332ad38d1aa667b71e0",
       "install": true
     },
     {
@@ -98,15 +114,15 @@
       "destination": "metadata.desktop",
       "mode": "0644",
       "size": 204,
-      "sha256": "05240f0633ac4ca256405960ea330f3e1c21e528b882a9eb8669503b836482b3",
+      "sha256": "18517a07a6e69d8c3dc067914d5ee60dca63e466fc37400d0a83f606ce68af02",
       "install": true
     },
     {
       "source": "theme.conf",
       "destination": "theme.conf",
       "mode": "0644",
-      "size": 10,
-      "sha256": "a371ee2822ab833c1349cbe193bf4b9292d6ab6b49a22b525fc1dcd95aa933c1",
+      "size": 84,
+      "sha256": "82781c9e293bda3f8912b8739b489e5cb7b40bb1d7905c8a63eb50e681f6dbd9",
       "install": true
     }
   ]
